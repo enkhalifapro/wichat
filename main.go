@@ -158,13 +158,14 @@ func main() {
 	scheduler.Every(1).Seconds().Run(getMsgs)
 
 	// check new messages to send
+	whisperHelper := NewWhisperHelper(shh)
 	for {
 		newMsgPrompt := promptui.Prompt{
 			Label: "",
 		}
 		msgContent, _ := newMsgPrompt.Run()
 		fakeRecpient := "0x0477e7a5e6215d00df2c19fbfc4241973984e5ab114a10346e894e37699c41186b4ada203b925dd37a3dcb4df609c1d3b8151d38a98a87307624a7108648450008"
-		msg := &message{From: config.PrivateKey,
+		msg := &Message{From: config.PrivateKey,
 			To:      fakeRecpient,
 			Topic:   "0xdeadbeef",
 			Content: msgContent,
@@ -173,13 +174,13 @@ func main() {
 
 		if config.PrivateKey != "" {
 			// send asym
-			err = sendAsymMsg(shh, msg)
+			err = whisperHelper.SendAsymMsg(msg)
 			if err != nil {
 				panic(err)
 			}
 		} else {
 			// send asym
-			err = sendSymMsg(shh, config.Password, msg)
+			err = whisperHelper.SendSymMsg(config.Password, msg)
 			if err != nil {
 				panic(err)
 			}
