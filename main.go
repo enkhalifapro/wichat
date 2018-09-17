@@ -84,8 +84,18 @@ func readConfig() (*config, error) {
 	return config, nil
 }
 
-func sendMsg(shh *shh.SHH, msg *message) error {
+func sendAsymMsg(shh *shh.SHH, msg *message) error {
 	_, err := shh.AsymPost(msg.From, msg.To, msg.Topic, msg.Content, big.NewInt(msg.TTL))
+	return err
+
+}
+
+func sendSymMsg(shh *shh.SHH, password string, msg *message) error {
+	symKey, err := shh.GenerateSymKeyFromPassword(password)
+	if err != nil {
+		return err
+	}
+	_, err = shh.SymPost(symKey, msg.To, msg.Topic, msg.Content, big.NewInt(msg.TTL))
 	return err
 }
 
@@ -110,11 +120,11 @@ func main() {
 		panic(err)
 	}
 
+	// messages listner
 	getMsgs := func() {
 		msgs := shh.GetFilterMsgs(filterID)
 		if len(msgs) > 0 {
 			for _, msg := range msgs {
-				fmt.Println("in rec")
 				fmt.Println(utils.DecodeHex(msg.Payload))
 			}
 		}
@@ -123,19 +133,30 @@ func main() {
 	scheduler.Every(1).Seconds().Run(getMsgs)
 
 	for {
-		msgPrompt := promptui.Prompt{
+		newMsgPrompt := promptui.Prompt{
 			Label: "",
 		}
-		msg, _ := msgPrompt.Run()
+		msgContent, _ := newMsgPrompt.Run()
 		fakeRecpient := "0x0477e7a5e6215d00df2c19fbfc4241973984e5ab114a10346e894e37699c41186b4ada203b925dd37a3dcb4df609c1d3b8151d38a98a87307624a7108648450008"
-		err = sendMsg(shh, &message{From: config.PrivateKey,
+		msg := &message{From: config.PrivateKey,
 			To:      fakeRecpient,
 			Topic:   "0xdeadbeef",
-			Content: msg,
+			Content: msgContent,
 			TTL:     7,
-		})
-		if err != nil {
-			panic(err)
+		}
+
+		if config.PrivateKey != "" {
+			// send asym
+			err = sendAsymMsg(shh, msg)
+			if err != nil {
+				panic(err)
+			}
+		} else {
+			// send asym
+			err = sendSymMsg(shh, config.Password, msg)
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 }
