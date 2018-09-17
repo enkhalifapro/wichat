@@ -55,7 +55,7 @@ func (w *WhisperHelper) SendAsymMsg(msg *Message) error {
 // SendSymMsg sends a message with symmetric encryption
 func (w *WhisperHelper) SendSymMsg(password string, msg *Message) error {
 	if password == "" {
-		return errors.New("Invalid send key")
+		return errors.New("password is empty")
 	}
 	symKey, err := w.shh.GenerateSymKeyFromPassword(password)
 	if err != nil {

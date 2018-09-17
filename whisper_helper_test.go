@@ -26,4 +26,11 @@ var _ = Describe("WhisperHelper", func() {
 		})
 	})
 
+	Describe("SendSymMsg", func() {
+		It("should return error when pass an empty password", func() {
+			err := whisperHelper.SendSymMsg("", &Message{})
+			Expect(err.Error()).To(Equal("password is empty"))
+		})
+	})
+
 })
