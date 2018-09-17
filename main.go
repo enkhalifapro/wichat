@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"math/big"
+	"os/exec"
 
 	"github.com/enkhalifapro/go-web3/utils"
 	"github.com/manifoldco/promptui"
@@ -99,7 +101,45 @@ func sendSymMsg(shh *shh.SHH, password string, msg *message) error {
 	return err
 }
 
+// excute command
+func run(command string, arguments ...string) error {
+	cmd := exec.Command(command, arguments...)
+
+	// Connect pipe to read Stderr
+	stderr, err := cmd.StderrPipe()
+
+	if err != nil {
+		// Failed to connect pipe
+		return fmt.Errorf("%q failed to connect stderr pipe: %v", command, err)
+	}
+
+	// Do not use cmd.Run()
+	if err := cmd.Start(); err != nil {
+		// Problem while copying stdin, stdout, or stderr
+		return fmt.Errorf("%q failed: %v", command, err)
+	}
+
+	// Zero exit status
+	// Darwin: launchctl can fail with a zero exit status,
+	// so check for emtpy stderr
+	if command == "launchctl" {
+		slurp, _ := ioutil.ReadAll(stderr)
+		if len(slurp) > 0 {
+			return fmt.Errorf("%q failed with stderr: %s", command, slurp)
+		}
+	}
+
+	return nil
+}
+
 func main() {
+
+	// run geth
+	err := run("geth", "--testnet", "--light", "--rpc", "--shh", "--rpcport", "8545", "--rpcaddr", "127.0.0.1", "--rpccorsdomain", "*")
+	if err != nil {
+		fmt.Println(err.Error())
+		panic(err)
+	}
 
 	config, err := readConfig()
 	if err != nil {
