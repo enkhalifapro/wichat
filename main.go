@@ -7,6 +7,7 @@ import (
 	"os/exec"
 
 	"github.com/enkhalifapro/go-web3/utils"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/manifoldco/promptui"
 
 	"github.com/carlescere/scheduler"
@@ -21,6 +22,7 @@ type config struct {
 	IsAsym     bool
 	PrivateKey string
 	Password   string
+	Topic      string
 }
 
 type message struct {
@@ -83,6 +85,14 @@ func readConfig() (*config, error) {
 		config.Password = pass
 	}
 
+	topicPrompt := promptui.Prompt{
+		Label: "Topic: ",
+	}
+	topic, err := topicPrompt.Run()
+	if err != nil {
+		return nil, err
+	}
+	config.Topic = hexutil.Encode([]byte(topic))
 	return config, nil
 }
 
@@ -134,14 +144,13 @@ func run(command string, arguments ...string) error {
 
 func main() {
 
-	// run geth
-	err := run("geth", "--testnet", "--light", "--rpc", "--shh", "--rpcport", "8545", "--rpcaddr", "127.0.0.1", "--rpccorsdomain", "*")
+	config, err := readConfig()
 	if err != nil {
-		fmt.Println(err.Error())
 		panic(err)
 	}
 
-	config, err := readConfig()
+	// run geth
+	err = run("geth", "--testnet", "--light", "--rpc", "--shh", "--rpcport", "8545", "--rpcaddr", "127.0.0.1", "--rpccorsdomain", "*")
 	if err != nil {
 		panic(err)
 	}
@@ -172,6 +181,7 @@ func main() {
 
 	scheduler.Every(1).Seconds().Run(getMsgs)
 
+	// check new messages to send
 	for {
 		newMsgPrompt := promptui.Prompt{
 			Label: "",
