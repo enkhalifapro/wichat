@@ -34,6 +34,10 @@
   name = "github.com/enkhalifapro/go-web3"
 
 [[constraint]]
+  name = "github.com/ethereum/go-ethereum"
+  version = "1.8.15"
+
+[[constraint]]
   name = "github.com/manifoldco/promptui"
   version = "0.3.1"
 
