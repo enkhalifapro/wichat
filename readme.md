@@ -8,4 +8,3 @@ $ dep ensure
 $ go build
 $ ./wichat
 ```
-
