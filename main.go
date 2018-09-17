@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"math/big"
 	"os/exec"
 
 	"github.com/enkhalifapro/go-web3/utils"
@@ -23,14 +22,6 @@ type config struct {
 	PrivateKey string
 	Password   string
 	Topic      string
-}
-
-type message struct {
-	From    string
-	To      string
-	Topic   string
-	Content string
-	TTL     int64
 }
 
 func readConfig() (*config, error) {
@@ -94,21 +85,6 @@ func readConfig() (*config, error) {
 	}
 	config.Topic = hexutil.Encode([]byte(topic))
 	return config, nil
-}
-
-func sendAsymMsg(shh *shh.SHH, msg *message) error {
-	_, err := shh.AsymPost(msg.From, msg.To, msg.Topic, msg.Content, big.NewInt(msg.TTL))
-	return err
-
-}
-
-func sendSymMsg(shh *shh.SHH, password string, msg *message) error {
-	symKey, err := shh.GenerateSymKeyFromPassword(password)
-	if err != nil {
-		return err
-	}
-	_, err = shh.SymPost(symKey, msg.To, msg.Topic, msg.Content, big.NewInt(msg.TTL))
-	return err
 }
 
 // excute command
