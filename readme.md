@@ -1,6 +1,6 @@
 # wichat
 
-## whisper chat sample
+## whisper decentralized chat sample
 
 ### Run
 ```
