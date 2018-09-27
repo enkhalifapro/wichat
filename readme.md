@@ -1,6 +1,6 @@
 # wichat
 
-## whisper decentralized chat sample
+## Decentralized chat dapp based on ethereum whisper.
 
 ### Run
 ```
